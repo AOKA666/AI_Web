@@ -41,27 +41,18 @@ export default function Home() {
     setErrorMessage(null)
     setResultUrl(null)
     try {
-      // 先上传，获取可访问URL
-      const up = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: uploadedImage }),
-      })
-      const upData = await up.json()
-      if (!up.ok) {
-        throw new Error(upData?.error || "上传失败")
-      }
-      const imageUrl = upData?.url
-
-      // 用URL发起 Ark 图生图
+      // 直接发送 base64 给 ARK API，不需要先上传到本地
       const res = await fetch("/api/age-filter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageUrl, age: selectedAge }),
+        body: JSON.stringify({ image: uploadedImage, age: selectedAge }),
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data?.error || "生成失败")
+        const errorMsg = data?.error || "生成失败"
+        const detailMsg = data?.detail || ""
+        console.error("API Error:", data)
+        throw new Error(`${errorMsg}${detailMsg ? `: ${detailMsg}` : ''}`)
       }
       setResultUrl(data?.url || null)
     } catch (err: any) {
