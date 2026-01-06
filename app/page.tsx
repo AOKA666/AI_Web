@@ -88,8 +88,10 @@ export default function Home() {
 
       if (data.success) {
         setUser(null)
-        // 清除后，跳转到主页
-        window.location.href = '/'
+        // 等待一小段时间确保 cookie 完全清除
+        await new Promise(resolve => setTimeout(resolve, 100))
+        // 使用 replace 而不是 href，避免浏览器历史记录问题
+        window.location.replace('/')
       } else {
         console.error('Logout failed:', data.error)
       }
