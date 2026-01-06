@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { NextResponse } from 'next/server'
 
 export async function POST() {
   const supabase = await createClient()
@@ -9,9 +9,9 @@ export async function POST() {
 
   if (error) {
     console.error('Error signing out:', error)
-    redirect('/login?error=true')
+    return NextResponse.json({ error: 'Failed to sign out' }, { status: 500 })
   }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  return NextResponse.json({ success: true })
 }

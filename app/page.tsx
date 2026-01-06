@@ -83,10 +83,16 @@ export default function Home() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      setUser(null)
-      // API 会重定向到主页，这里作为备用
-      window.location.href = '/'
+      const res = await fetch('/api/auth/logout', { method: 'POST' })
+      const data = await res.json()
+
+      if (data.success) {
+        setUser(null)
+        // 清除后，跳转到主页
+        window.location.href = '/'
+      } else {
+        console.error('Logout failed:', data.error)
+      }
     } catch (err) {
       console.error('Logout failed:', err)
     }
