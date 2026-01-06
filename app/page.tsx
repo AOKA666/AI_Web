@@ -85,7 +85,8 @@ export default function Home() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
       setUser(null)
-      window.location.href = '/login'
+      // API 会重定向到主页，这里作为备用
+      window.location.href = '/'
     } catch (err) {
       console.error('Logout failed:', err)
     }
