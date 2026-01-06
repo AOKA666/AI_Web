@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 import { promises as fs } from "fs"
 import { randomUUID } from "crypto"
 import path from "path"
@@ -15,6 +16,13 @@ function extFromMime(mime?: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const { image } = await req.json()
     if (!image || typeof image !== "string") {
       return NextResponse.json({ error: "缺少图片数据" }, { status: 400 })

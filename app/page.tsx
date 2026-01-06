@@ -25,6 +25,7 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const isAuthenticated = !!user
 
   useEffect(() => {
     // Fetch user status on mount
@@ -39,6 +40,11 @@ export default function Home() {
   }, [])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAuthenticated) {
+      setErrorMessage("请先登录后再上传图片")
+      window.location.href = "/login"
+      return
+    }
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
@@ -51,7 +57,20 @@ export default function Home() {
     }
   }
 
+  const handleUploadClick = (e: React.MouseEvent<HTMLLabelElement>) => {
+    if (!isAuthenticated) {
+      e.preventDefault()
+      setErrorMessage("请先登录后再上传图片")
+      window.location.href = "/login"
+    }
+  }
+
   const handleGenerate = async () => {
+    if (!isAuthenticated) {
+      setErrorMessage("请先登录后再使用图片编辑功能")
+      window.location.href = "/login"
+      return
+    }
     if (!uploadedImage) {
       setErrorMessage("请先上传图片")
       return
@@ -67,6 +86,11 @@ export default function Home() {
         body: JSON.stringify({ image: uploadedImage, age: selectedAge }),
       })
       const data = await res.json()
+      if (res.status === 401) {
+        setErrorMessage("登录已过期，请重新登录")
+        window.location.href = "/login"
+        return
+      }
       if (!res.ok) {
         const errorMsg = data?.error || "生成失败"
         const detailMsg = data?.detail || ""
@@ -201,9 +225,15 @@ export default function Home() {
                   id="image-upload"
                   className="hidden"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                  disabled={!isAuthenticated}
                   onChange={handleImageUpload}
                 />
-                <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center gap-3">
+                <label
+                  htmlFor="image-upload"
+                  className={`flex flex-col items-center gap-3 ${isAuthenticated ? "cursor-pointer" : "cursor-not-allowed opacity-60"}`}
+                  aria-disabled={!isAuthenticated}
+                  onClick={handleUploadClick}
+                >
                   {uploadedImage ? (
                     <img src={uploadedImage || "/placeholder.svg"} alt="Uploaded" className="max-h-48 rounded-lg" />
                   ) : (
@@ -227,11 +257,12 @@ export default function Home() {
                     <button
                       key={option.value}
                       onClick={() => setSelectedAge(option.value)}
+                      disabled={!isAuthenticated}
                       className={`p-3 rounded-lg border-2 text-center transition-all ${
                         selectedAge === option.value
                           ? "border-purple-600 bg-purple-50"
                           : "border-gray-200 hover:border-purple-300"
-                      }`}
+                      } ${!isAuthenticated ? "opacity-60 cursor-not-allowed" : ""}`}
                     >
                       <div className="font-bold text-xl">{option.value}</div>
                       <div className="font-semibold text-xs">{option.label}</div>
@@ -262,11 +293,16 @@ export default function Home() {
               <Button
                 className="w-full h-11 text-base bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                 onClick={handleGenerate}
-                disabled={!uploadedImage || isGenerating}
+                disabled={!isAuthenticated || !uploadedImage || isGenerating}
               >
                 <Sparkles className="mr-2 h-4 w-4" />
                 {isGenerating ? "Generating..." : "Generate AI Age Filter"}
               </Button>
+              {!isAuthenticated && (
+                <p className="text-sm text-muted-foreground">
+                  请先登录以使用图片上传和生成功能。
+                </p>
+              )}
               {errorMessage && (
                 <p className="text-sm text-red-600 mt-2">{errorMessage}</p>
               )}
