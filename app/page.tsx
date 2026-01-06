@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -10,14 +10,33 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Upload, Sparkles, Shield, Zap, TrendingUp, Download, ImageIcon, ChevronRight } from "lucide-react"
 import ImageComparisonCarousel from "@/components/image-comparison-carousel"
+import Link from "next/link"
+
+interface User {
+  email?: string
+  id?: string
+}
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null)
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [selectedAge, setSelectedAge] = useState<string>("20")
   const [selectedGender, setSelectedGender] = useState<string>("male")
   const [isGenerating, setIsGenerating] = useState<boolean>(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Fetch user status on mount
+    fetch('/api/user')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user)
+        }
+      })
+      .catch(err => console.error('Failed to fetch user:', err))
+  }, [])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -62,6 +81,17 @@ export default function Home() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      setUser(null)
+      window.location.href = '/login'
+    } catch (err) {
+      console.error('Logout failed:', err)
+    }
+  }
+
+
   const handleDownload = async () => {
     if (!resultUrl) return
     try {
@@ -92,23 +122,37 @@ export default function Home() {
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-purple-600" />
             <span className="text-xl font-bold">RightHair AI</span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm font-medium hover:text-purple-600 transition-colors">
+            <Link href="/" className="text-sm font-medium hover:text-purple-600 transition-colors">
               Home
-            </a>
+            </Link>
             <a href="#" className="text-sm font-medium hover:text-purple-600 transition-colors">
               Tools
             </a>
             <a href="#" className="text-sm font-medium hover:text-purple-600 transition-colors">
               About
             </a>
-            <Button variant="default" size="sm">
-              Get Started
-            </Button>
+
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {user.email}
+                </span>
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="default" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </nav>
         </div>
       </header>
