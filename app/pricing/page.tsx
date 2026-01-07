@@ -21,6 +21,7 @@ interface User {
 export default function PricingPage() {
   const [billing, setBilling] = useState<BillingCycle>("monthly")
    const [user, setUser] = useState<User | null>(null)
+  const isAuthenticated = !!user
 
   useEffect(() => {
     fetch("/api/user")
@@ -172,7 +173,7 @@ export default function PricingPage() {
 
         <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {plans.map((plan) => {
-            const isMissingProduct = !plan.productId && plan.id !== "free"
+            const isMissingProduct = !plan.productId
             return (
               <Card
                 key={plan.id}
@@ -209,11 +210,20 @@ export default function PricingPage() {
                 <div className="mt-auto">
                   {plan.cta ? (
                     plan.cta
+                  ) : isMissingProduct ? (
+                    <Button className="w-full" variant="outline" disabled>
+                      Set product ID first
+                    </Button>
+                  ) : !isAuthenticated ? (
+                    <Link href="/login">
+                      <Button className="w-full" variant="outline">
+                        Log in to subscribe
+                      </Button>
+                    </Link>
                   ) : (
                     <CreemCheckoutButton
                       productId={plan.productId || ""}
-                      label={isMissingProduct ? "Set product ID first" : "Subscribe now"}
-                      disabled={isMissingProduct}
+                      label="Subscribe now"
                       className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                     />
                   )}

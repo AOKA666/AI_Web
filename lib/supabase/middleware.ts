@@ -35,13 +35,14 @@ export async function updateSession(request: NextRequest) {
   // 调试日志
   console.log('Middleware - Path:', request.nextUrl.pathname, 'User:', !!user)
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth/callback') &&
-    !request.nextUrl.pathname.startsWith('/api') &&
-    request.nextUrl.pathname !== '/'
-  ) {
+  const path = request.nextUrl.pathname
+  const isPublic =
+    path === '/' ||
+    path.startsWith('/pricing') ||
+    path.startsWith('/login') ||
+    path.startsWith('/auth/callback')
+
+  if (!user && !isPublic && !path.startsWith('/api')) {
     // no user, potentially respond by redirecting the user to the login page
     console.log('Middleware - Redirecting to login')
     const url = request.nextUrl.clone()
