@@ -163,6 +163,9 @@ export default function Home() {
             <Link href="/" className="text-sm font-medium hover:text-purple-600 transition-colors">
               Home
             </Link>
+            <Link href="/pricing" className="text-sm font-medium hover:text-purple-600 transition-colors">
+              Pricing
+            </Link>
             <a href="#" className="text-sm font-medium hover:text-purple-600 transition-colors">
               Tools
             </a>
