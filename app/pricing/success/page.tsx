@@ -1,10 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
+import { Suspense, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { CheckCircle2, Home, ShoppingBag, Sparkles } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+
+export const dynamic = "force-dynamic"
 
 const PRODUCT_MAP = {
   [process.env.NEXT_PUBLIC_CREEM_PRODUCT_BASIC || ""]: "Basic",
@@ -12,7 +14,7 @@ const PRODUCT_MAP = {
   [process.env.NEXT_PUBLIC_CREEM_PRODUCT_TEAM || ""]: "Team",
 } as Record<string, string>
 
-export default function PricingSuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -116,3 +118,16 @@ export default function PricingSuccessPage() {
   )
 }
 
+export default function PricingSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+          Loading checkout result...
+        </div>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
+  )
+}
