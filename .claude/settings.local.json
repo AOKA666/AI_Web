@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(pnpm add @supabase/ssr @supabase/supabase-js)"
+      "Bash(pnpm add @supabase/ssr @supabase/supabase-js)",
+      "Bash(npm install)",
+      "Bash(npx tsc --version)",
+      "Bash(node -e \"console.log\\(require.resolve\\(''react''\\)\\)\")",
+      "Bash(dir node_modules)",
+      "Bash(powershell -Command \"Test-Path node_modules\")",
+      "Bash(powershell -Command \"npm install --legacy-peer-deps\")",
+      "Bash(powershell -Command \"Test-Path node_modules/react\")"
     ]
   }
 }
